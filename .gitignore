@@ -1,0 +1,11 @@
+# credentials never belong here
+*.env
+.env*
+*.key
+.cognee.env
+.nimble.env
+.anthropic.key
+# local run output
+band-work/
+checks/
+__pycache__/
