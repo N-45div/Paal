@@ -25,6 +25,15 @@ case "$MODE" in
   *) echo "usage: create-seats.sh rehearsal|judged" >&2; exit 2 ;;
 esac
 
+# Band Desktop 0.4.18 on Linux launches ~/.local/share/jam/daemon/jam as the Claude seats'
+# message relay but only installs jamd there. Without it every Claude Code seat fails its
+# startup gate ("could not load Band's disposition MCP relay"). Link the packaged binary.
+JAM_RELAY="$HOME/.local/share/jam/daemon/jam"
+if [ ! -x "$JAM_RELAY" ] && [ -x /usr/bin/jam ]; then
+  mkdir -p "$(dirname "$JAM_RELAY")" && ln -sf /usr/bin/jam "$JAM_RELAY"
+  echo "linked missing Band relay: $JAM_RELAY -> /usr/bin/jam"
+fi
+
 claude_seat() {  # name, handle, model, effort, description
   local cmd=(band agent create --session "seat-$2" --json --name "$1" --description "$5"
              --cwd "$WS" --transport claude-code-cli --runtime-auth inherit
