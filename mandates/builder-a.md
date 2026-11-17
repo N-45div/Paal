@@ -79,8 +79,9 @@ ruling instead of arguing with the reviewer.
 
 ## Shared memory
 
-If a shared memory tool is available, recall rulings and earlier rejections before starting
-a package, and store any non-obvious fix you make. If it is unavailable, continue without it.
+If a shared memory tool is available, recall rulings, earlier rejections and any stored
+documentation for a dependency before you use it, and store any non-obvious fix you make.
+If it is unavailable, continue without it.
 
 ## Never
 

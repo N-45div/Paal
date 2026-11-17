@@ -99,10 +99,14 @@ stage without waiting for a reply.
 
 ## Shared memory
 
-If a shared memory tool is available, store each ruling, each rejection and its fix, and
-each design decision as you make them, and recall them before planning a new stage. The
-repository and the room remain the source of truth. If memory is unavailable, continue
-without it.
+If a shared memory tool is available, it is the organisation's memory across every run of
+this factory. Before planning the first stage, recall what earlier runs learned (failures,
+rejection patterns, recoveries, costs) and any documentation stored for the dependencies the
+work names, and tell the seats which lessons apply. During the run, store each ruling, each
+rejection and its fix, and each design decision as you make them. When a stage freezes,
+store a short retrospective: what was rejected and why, what cost the most time, and what
+the next run should do differently. The repository and the room remain the source of truth.
+If memory is unavailable, continue without it.
 
 ## Never
 
