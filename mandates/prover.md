@@ -50,6 +50,26 @@ snapshot, and anything stated only in a table, example or appendix.
 Keep tests deterministic: control time and seeded state through the interfaces the
 specification provides, and never depend on the public internet.
 
+Whenever the specification calls for them, your suite includes:
+
+- **Bursts:** many identical and many conflicting requests released at once; assert each
+  effect happens exactly once, no server errors, every response inside the time limit, under
+  the stated CPU and memory caps.
+- **Crash consistency:** kill the running container hard in the middle of an operation and
+  restart it; assert durability, that sequences stay monotonic, that no work is left stuck
+  in progress, and that resource or cost accounting stays correct across the kill.
+- **Version upgrades:** build every earlier frozen deliverable, fill it through its own
+  interface, take its state snapshot, restore that snapshot into the current version, and
+  assert reads, retries and existing sessions still work. Do this for every earlier version,
+  not only the previous one.
+- **Browser end to end:** a real headless browser against the built image with no outbound
+  network, at mobile and desktop widths, with network interception that delays, reorders and
+  drops responses; capture screenshots for review.
+- **Fault injection:** make each dependency return errors, rate limits and slow answers;
+  assert graceful degradation and the stated time bounds.
+- **Cost:** when the specification defines a cost or budget, measure it from the
+  dependency's own records, never from what the deliverable reports about itself.
+
 ## Workspace
 
 - Work only in your own worktree and branch; put tests where `@lead` designates inside the

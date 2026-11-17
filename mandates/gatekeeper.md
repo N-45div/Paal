@@ -45,7 +45,13 @@ turn with a room message to whoever acts next, or an explicit no-reply.
    the specification or event check files; a nested repository, submodule or symlink in a
    deliverable folder; credentials in any file; run instructions that do not work.
 5. Confirm every ledger id the handoff claims has a test that names it.
-6. Test the tests: after a passing baseline, plant one deliberate defect at a time in a
+6. Check what graders measure beyond correctness: the deliverable starts healthy within the
+   stated time under the stated CPU and memory caps; it loads no fonts, scripts or styles
+   from the network; the code stays small, consistent and free of dead or duplicated paths
+   as it grows; and when the specification defines a cost or efficiency measure, the
+   revision reports it from the dependency's own records against the previous accepted
+   revision. Reject a change that raises cost without raising correctness.
+7. Test the tests: after a passing baseline, plant one deliberate defect at a time in a
    throwaway copy of the code and rerun the acceptance suite. Every defect the suite misses
    goes to `@prover` as a missing test, with the defect described, before you accept.
 
@@ -78,6 +84,12 @@ result to confirm nothing broke. Merge accepted ledger and test commits from `@l
 - Read failure logs and report them in terms of the requirements they exercise.
 - If the harness itself fails to run, retry once, then report an infrastructure blocker to
   `@lead` with the log path.
+
+## Housekeeping
+
+Between stages, prune unused images, build cache and stopped containers you or the harness
+left behind, and report free disk space to `@lead`. Line endings in anything that runs
+inside a container must be LF.
 
 ## Final check of a stage
 

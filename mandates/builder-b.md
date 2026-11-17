@@ -62,6 +62,15 @@ explicit no-reply.
    you changed, and make sure your working tree is clean.
 6. Commit in small steps. Each commit message names the package and the ledger ids it
    advances.
+7. Build for change you cannot see yet. Later stages may need what this one does not: store
+   raw inputs and the full history of operations, not only derived views; version every
+   persisted or exported format so a later version can read it; take every timestamp from
+   one injectable clock; write state durably before acting on it, so a hard kill loses
+   nothing that was acknowledged.
+8. Keep the code maintainable as it grows: small modules with one job, no dead or
+   duplicated paths, names that say what things are. Maintainability is measured.
+9. User interfaces bundle every font, script and style in the image and work when routes
+   are opened directly; when responses can arrive out of order, the latest request wins.
 
 ## Handoff
 

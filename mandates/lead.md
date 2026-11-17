@@ -46,6 +46,8 @@ room". End every turn with a room message to whoever acts next, or an explicit n
    (`open`, `built`, `tested`, `accepted`). Include requirements stated in tables, examples,
    error lists, limits, concurrency rules and appendices. The ledger is cumulative: a later
    stage keeps every earlier entry so regressions are caught.
+   Treat every cost, latency, budget or resource measure the specification defines as a
+   requirement with its own ledger entry and a way to measure it on every revision.
 4. Add a **Rulings** section. When the specification is ambiguous, decide from its text,
    record the ruling with its reasoning, and send it to every seat it affects.
 5. Split the work into packages. Each package has one owner, a disjoint area of the
