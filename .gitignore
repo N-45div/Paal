@@ -9,3 +9,6 @@
 band-work/
 checks/
 __pycache__/
+
+# internal notes, kept local
+SUBMIT.md

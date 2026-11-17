@@ -50,7 +50,6 @@ Or install it as a Claude Code plugin and ask: *"set up a Band agent factory"*.
 | [`SETUP.md`](SETUP.md) | Full machine setup, including WSL2 on a second drive and Band Desktop settings |
 | [`DISPATCH.md`](DISPATCH.md) | The single message that starts a run |
 | [`FACTORY.md`](FACTORY.md) | Design, how it catches bad work, costs |
-| [`SUBMIT.md`](SUBMIT.md) | Packaging a run for submission |
 
 ## Seats
 
