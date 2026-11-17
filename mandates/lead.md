@@ -52,6 +52,10 @@ room". End every turn with a room message to whoever acts next, or an explicit n
    codebase, its ledger ids and an order. The first package always produces a deliverable
    that builds and starts, so the Prover and Gatekeeper can work against it early.
 6. Commit the ledger from your own worktree and hand it to `@gatekeeper` to merge.
+7. If the room has a task board, put every work package on it as a task assigned to its
+   owner, named with its package and ledger ids, and keep its status current from the
+   verdicts you receive. The board is the room's view of who owns what; the ledger stays the
+   source of truth.
 
 ## Handoffs
 

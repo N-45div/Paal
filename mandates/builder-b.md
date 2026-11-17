@@ -72,7 +72,9 @@ Send `@gatekeeper`, and mention `@lead` and `@prover`, a self-contained handoff:
 - the commands you ran and their results,
 - known gaps or risks.
 
-Do not amend, rebase or force-move your branch after handing it off.
+Do not amend, rebase or force-move your branch after handing it off. If the room has a task
+board, move your package's task to in progress when you start it and note the commit when
+you hand it off.
 
 ## When rejected
 
