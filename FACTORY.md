@@ -1,0 +1,87 @@
+# The Ledger Factory
+
+> DRAFT. Sections marked TBD are filled from rehearsal and judged-run measurements.
+
+A five-seat software factory for Band Desktop. It turns a written specification into a
+numbered **requirements ledger**, builds against it in parallel, proves each requirement
+with tests written independently of the code, and lets only verified work reach the
+integration branch. Nothing in the mandates names a problem domain: point the factory at a
+different specification and it runs the same way.
+
+## Seats
+
+| Seat | Harness | Model | Owns |
+|---|---|---|---|
+| Lead | Claude Code | TBD | Ledger, work packages, rulings, stage freeze, reports |
+| Builder A | Claude Code | TBD | Implements assigned packages |
+| Builder B | Claude Code | TBD | Implements assigned packages |
+| Prover | Codex | TBD | Black-box acceptance tests derived from the specification |
+| Gatekeeper | Codex | TBD | Clean-room review, all check runs, merges, final checks |
+
+Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what it builds.
+
+## One stage, end to end
+
+```text
+dispatch -> @lead reads the stage spec, writes the ledger (every "must" = one id, quoted verbatim)
+         -> @builder-a + @builder-b build disjoint packages      } in parallel
+         -> @prover writes tests per ledger id from the spec only }
+         -> builder hands off commit -> @gatekeeper: clean clone, build, run, test, read diff
+              REJECT (failing ids + evidence) -> builder fixes -> hands off again
+              ACCEPT -> merge into main
+         -> all packages in -> @gatekeeper final check (isolated) -> @lead freezes the folder,
+            copies it forward, and only then opens the next specification
+```
+
+## How it catches bad work
+
+1. **The ledger.** Every normative sentence, table row and appendix rule becomes an id with
+   the specification quoted. A stage is accepted only when every id has code, a test and a
+   pass. This is aimed at requirements a happy-path check never exercises.
+2. **Independent tests.** The Prover derives expected behaviour from the specification,
+   never from the implementation, and never copies the event's shipped checks. Tests and code
+   are written by different seats on different model families.
+3. **Clean-room review.** The Gatekeeper builds every handed-off commit from a fresh
+   checkout, following the run instructions literally, so uncommitted files, broken run
+   instructions and nested repositories fail before they reach main.
+4. **Diff review.** The Gatekeeper rejects logic that branches on a check's inputs, weakened
+   tests, changes to frozen folders, and credentials.
+5. **Isolated final check.** Each stage ends with the event check in isolated mode, which
+   catches dependencies on outbound network access.
+6. **Loop guard.** An id rejected three times is re-planned by the Lead (split, reassigned or
+   re-derived) instead of retried.
+
+## Design choices and what they cost
+
+| Choice | Why | Cost |
+|---|---|---|
+| Five seats, two builders | Parallel packages and clearly distributed work | More tokens; merge coordination |
+| Separate worktree and git identity per seat | Builders never trample each other's working tree; history shows who wrote what | One-time setup script |
+| Only the Gatekeeper merges and runs the harness | One gate, no parallel heavy checks overloading the machine | Gatekeeper can become a queue |
+| Prover on a different model family than the builders | Reduces shared blind spots between code and tests | A second provider account |
+| Full specification pasted into each seat's first handoff | Seats see only messages that mention them; pointers lose context | Large first messages per stage |
+| Cumulative ledger copied forward | Later stages re-verify earlier requirements | Ledger grows each stage |
+| Shared memory (Cognee) for rulings and rejection lessons | Context survives compaction and stage boundaries | Optional dependency; seats continue without it |
+
+## Failure handling
+
+- Missing seat: the Lead adds that exact seat and retries the handoff; unresponsive work is
+  reassigned and recorded.
+- Harness or infrastructure failure: retried once, then reported as a blocker with the log.
+- Unresolvable ambiguity: the Lead rules from the specification text and records the ruling.
+- Hard blocker: recorded as the stage outcome with evidence; the band never asks the human.
+
+## Standing it up
+
+See [`SETUP.md`](SETUP.md) (machine, Band Desktop settings, seats, shared memory) and
+[`DISPATCH.md`](DISPATCH.md) (the single message that starts a run).
+`setup/prepare-result-repo.sh` creates the result repository with one worktree per seat.
+
+## Measured cost and time
+
+TBD per stage: wall-clock from dispatch to freeze, model spend per seat (Band Desktop
+Analytics -> Usage & Cost), number of handoffs, rejections and what each changed.
+
+## What we tried that failed
+
+TBD from rehearsals.
