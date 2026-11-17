@@ -68,6 +68,9 @@ room". End every turn with a room message to whoever acts next, or an explicit n
   requirements. Never send a pointer in place of the text.
 - Keep every seat busy: builders build, the Prover writes tests in parallel, the Gatekeeper
   reviews packages as they land. Assign independent packages to both builders at once.
+- Never put a builder on standby. If a stage looks like one package, split it by area (for
+  example core behaviour versus interface, persistence and durability, packaging and run
+  instructions, or performance and limits) so both builders start in the first hour.
 - Ask each receiver to acknowledge, but tell it to proceed without waiting for any reply.
   A busy seat reads new messages only when its turn ends, so no seat may block on another's
   acknowledgement.
