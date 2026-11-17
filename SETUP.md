@@ -89,10 +89,7 @@ on **Run Band in the background**. Then `band doctor` must show every check `[ok
 ```bash
 read -rs K; printf 'LLM_API_KEY=%s\nCOGNEE_MCP_AGENT_SCOPED=false\n' "$K" > ~/.cognee.env; unset K
 chmod 600 ~/.cognee.env
-docker run -d --name cognee --restart unless-stopped -e TRANSPORT_MODE=http \
-  --env-file ~/.cognee.env -p 8765:8000 cognee/cognee-mcp:main
-claude mcp add --scope user --transport http cognee http://localhost:8765/mcp
-codex mcp add cognee --url http://localhost:8765/mcp
+bash ~/buildathon/factory-kit/setup/cognee.sh local     # or: cloud (see skills/cognee-memory)
 ```
 
 Port 8765 keeps clear of the service (8000) and mock web (8080). Memory contents and tool

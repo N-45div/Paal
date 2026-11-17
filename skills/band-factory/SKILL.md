@@ -43,6 +43,13 @@ checks are needed.
 Human approval wait: deny after 5 minutes. Question timeout: 300 s. Room activity feed: tool
 calls. Stop idle agents after: 1800 s. Integrations: Claude Code and Codex on.
 
+## 3b. Optional: shared memory and web research
+
+- Shared memory for all seats: follow the `cognee-memory` skill (`setup/cognee.sh local` or
+  `cloud`). Seats must inherit user MCP servers to see it.
+- Web research for the service being built: follow the `nimble-research` skill. Keep the
+  Nimble key with the person, never with a seat.
+
 ## 4. Create the seats
 
 ```bash
