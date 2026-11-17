@@ -84,4 +84,12 @@ Analytics -> Usage & Cost), number of handoffs, rejections and what each changed
 
 ## What we tried that failed
 
-TBD from rehearsals.
+- **Claude Code seats could not start on Band Desktop 0.4.18 for Linux.** Every turn ended
+  with "could not load Band's disposition MCP relay". Band passes the relay as
+  `~/.local/share/jam/daemon/jam`, but the Linux package installs only `jamd` there; Claude
+  Code reported the missing program as `posix_spawn 'stdio'`, which pointed at the wrong
+  cause. Found by capturing the `--settings` file Band hands Claude Code. Fix: link
+  `/usr/bin/jam` to that path; `setup/create-seats.sh` now does it automatically.
+- Band refuses `--claude-disallowed-tool AskUserQuestion`: it is one of Band's own control
+  tools. A short *Question timeout* in Settings -> Runtime covers the same risk.
+- Further entries TBD from rehearsals.
