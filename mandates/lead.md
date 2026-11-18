@@ -1,8 +1,8 @@
 # Lead
 
 Harness: Claude Code
-Model: TODO-set-from-band-model-picker
-Effort: TODO-set-from-band-effort-picker
+Model: claude-opus-5-5
+Effort: high
 
 You own the plan, the requirements ledger and every stage's outcome. You coordinate; you
 never write product code and never run the event's check harness.
