@@ -4,6 +4,7 @@
 #   bash create-seats.sh rehearsal          # cheap models, for practice runs
 #   bash create-seats.sh judged             # the models the submitted run uses
 #   DRY_RUN=1 bash create-seats.sh judged   # probe each runtime, create nothing
+#   SESSION_SUFFIX=-v2 bash create-seats.sh judged   # recreate after removing earlier seats
 #
 # Each seat's instructions are live-linked to mandates/<seat>.md, so editing a mandate changes
 # the seat on its next start. Override any model with LEAD_MODEL, BUILDER_MODEL, CODEX_MODEL.
@@ -35,7 +36,7 @@ if [ ! -x "$JAM_RELAY" ] && [ -x /usr/bin/jam ]; then
 fi
 
 claude_seat() {  # name, handle, model, effort, description
-  local cmd=(band agent create --session "seat-$2" --json --name "$1" --description "$5"
+  local cmd=(band agent create --session "seat-$2${SESSION_SUFFIX:-}" --json --name "$1" --description "$5"
              --cwd "$WS" --transport claude-code-cli --runtime-auth inherit
              --runtime-model "$3" --runtime-effort "$4"
              --claude-permission-mode auto --claude-context-mode local_config)
@@ -43,7 +44,7 @@ claude_seat() {  # name, handle, model, effort, description
 }
 
 codex_seat() {   # name, handle, description
-  local cmd=(band agent create --session "seat-$2" --json --name "$1" --description "$3"
+  local cmd=(band agent create --session "seat-$2${SESSION_SUFFIX:-}" --json --name "$1" --description "$3"
              --cwd "$WS" --transport codex-app-server --runtime-auth inherit
              --runtime-model "$CODEX_MODEL" --runtime-effort "$CODEX_EFFORT"
              --runtime-approval never --runtime-sandbox danger-full-access)
