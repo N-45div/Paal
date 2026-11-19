@@ -62,6 +62,7 @@ dispatch -> @lead reads the stage spec, writes the ledger (every "must" = one id
 | Full specification pasted into each seat's first handoff | Seats see only messages that mention them; pointers lose context | Large first messages per stage |
 | Cumulative ledger copied forward | Later stages re-verify earlier requirements | Ledger grows each stage |
 | Shared memory (Cognee) for rulings and rejection lessons | Context survives compaction and stage boundaries | Optional dependency; seats continue without it |
+| Claude seats fall back to Meta's Muse models (muse-spark-1.3) during a subscription limit, through `setup/muse-proxy.py` | Builders keep building through a limit window instead of idling until the reset | A third provider; Muse is untried on long agentic work, so seats return to Claude at the reset, each restarted only when quiet |
 
 ## Failure handling
 
