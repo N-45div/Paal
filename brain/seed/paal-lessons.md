@@ -15,3 +15,9 @@
   profile, so put `claude` and `codex` launchers in /usr/local/bin.
 - Give each seat its own git worktree, branch and identity; only the Gatekeeper merges.
 - Rehearse on the cheapest models first: the rehearsal tests plumbing, not quality.
+- A Lead's stage report to the person must never end its turn: in the same turn, send every
+  seat its next handoff, or the band idles forever (seats see only messages that mention them).
+- Interpretation belongs to the Lead. If the Gatekeeper rejects on a reading the Lead has ruled
+  on, the ruling binds; never freeze a stage with passing work held back by a reading dispute.
+- Price the Lead's model first: an Opus Lead with high effort was the single largest cost of a
+  stage. A Sonnet Lead with Haiku builders costs about a third.

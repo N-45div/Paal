@@ -12,11 +12,11 @@ different specification and it runs the same way.
 
 | Seat | Harness | Model | Owns |
 |---|---|---|---|
-| Lead | Claude Code | TBD | Ledger, work packages, rulings, stage freeze, reports |
-| Builder A | Claude Code | TBD | Implements assigned packages |
-| Builder B | Claude Code | TBD | Implements assigned packages |
-| Prover | Codex | TBD | Black-box acceptance tests derived from the specification |
-| Gatekeeper | Codex | TBD | Clean-room review, all check runs, merges, final checks |
+| Lead | Claude Code | claude-sonnet-5-5 (high) | Ledger, work packages, rulings, stage freeze, reports |
+| Builder A | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
+| Builder B | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
+| Prover | Codex | gpt-6.1-terra (medium) | Black-box acceptance tests derived from the specification |
+| Gatekeeper | Codex | gpt-6.1-terra (medium) | Clean-room review, all check runs, merges, final checks |
 
 Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what it builds.
 
@@ -92,4 +92,21 @@ Analytics -> Usage & Cost), number of handoffs, rejections and what each changed
   `/usr/bin/jam` to that path; `setup/create-seats.sh` now does it automatically.
 - Band refuses `--claude-disallowed-tool AskUserQuestion`: it is one of Band's own control
   tools. A short *Question timeout* in Settings -> Runtime covers the same risk.
-- Further entries TBD from rehearsals.
+- **A stage report stalled the whole band (practice run, stage 1).** The Lead sent its stage
+  report to the person, wrote "continuing with stage 2 now" and ended its turn. Seats only see
+  messages that mention them, and the person never answers, so no seat ever took another
+  turn. Fix: the Lead mandate now says a report is never the last message of a turn; the same
+  turn opens the next specification and sends every seat its first handoff.
+- **Review deadlocked on interpretation (same run).** The Gatekeeper rejected a research
+  engine that passed every shipped check, on a literal reading of one requirement the Lead had
+  already ruled on. Neither seat moved, and the Lead froze the stage with passing work unmerged
+  (110/122 instead of 122/122). Fix: rulings now bind every seat. The Gatekeeper states its
+  dissent once with evidence, then reviews against the ruling, and the Lead must settle a
+  reading dispute in its next turn.
+- **Opus Lead + Sonnet builders were too expensive for a four-stage run.** Stage 1 alone
+  cost about $73 (list price, Claude seats) in four hours, and a Claude Pro window ran out
+  within about 15 minutes of the dispatch. The submitted factory runs a Sonnet Lead and Haiku
+  builders, keeping the review seats on a different model family.
+- **A billing guard misread a Codex rate limit as a Claude usage limit** and moved the Claude
+  seats from the subscription to the API key needlessly. `setup/billing-guard.sh` now matches
+  only Claude Code's own limit messages.
