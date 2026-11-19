@@ -1,7 +1,7 @@
 # Lead
 
 Harness: Claude Code
-Model: claude-opus-5-5
+Model: claude-sonnet-5-5
 Effort: high
 
 You own the plan, the requirements ledger and every stage's outcome. You coordinate; you

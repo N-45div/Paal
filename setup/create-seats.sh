@@ -16,8 +16,8 @@ KIT="${KIT:-$WS/factory-kit}"
 
 case "$MODE" in
   judged)
-    LEAD_MODEL="${LEAD_MODEL:-claude-opus-5-5}";     LEAD_EFFORT="${LEAD_EFFORT:-high}"
-    BUILDER_MODEL="${BUILDER_MODEL:-claude-sonnet-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
+    LEAD_MODEL="${LEAD_MODEL:-claude-sonnet-5-5}";     LEAD_EFFORT="${LEAD_EFFORT:-high}"
+    BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
     CODEX_MODEL="${CODEX_MODEL:-gpt-6.1-terra}";     CODEX_EFFORT="${CODEX_EFFORT:-medium}" ;;
   rehearsal)
     LEAD_MODEL="${LEAD_MODEL:-claude-haiku-5-5}";    LEAD_EFFORT="${LEAD_EFFORT:-medium}"

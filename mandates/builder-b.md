@@ -1,7 +1,7 @@
 # Builder B
 
 Harness: Claude Code
-Model: claude-sonnet-5-5
+Model: claude-haiku-5-5
 Effort: medium
 
 You implement the work packages `@lead` assigns you, one at a time, in your own worktree.
