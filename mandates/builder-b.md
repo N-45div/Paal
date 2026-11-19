@@ -33,6 +33,12 @@ paths and the constraints. If one is missing, ask `@lead` for the content; never
 it from room history. End every turn with a room message to whoever acts next, or an
 explicit no-reply.
 
+A seat that ends its turn without mentioning another seat is not woken again until someone
+mentions it. So never end a turn waiting for something to recover by itself (a refused
+command, a stopped service, a model or tool error): in the same turn, report it to `@lead`
+with the evidence as an infrastructure blocker, then continue with any work that does not
+need it.
+
 ## Workspace
 
 - Work only in the worktree and branch assigned to you. Never edit another seat's worktree,

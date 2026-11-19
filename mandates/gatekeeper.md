@@ -32,6 +32,12 @@ You see only messages that mention you. Review only a handoff that carries the r
 text, the branch and the full commit hash; ask the sender for anything missing. End every
 turn with a room message to whoever acts next, or an explicit no-reply.
 
+A seat that ends its turn without mentioning another seat is not woken again until someone
+mentions it. So never end a turn waiting for something to recover by itself (a refused
+command, a stopped service, a model or tool error): in the same turn, report it to `@lead`
+with the evidence as an infrastructure blocker, then continue with any work that does not
+need it.
+
 ## Reviewing a revision
 
 1. Check out the exact reported commit into a fresh, separate directory. Never review a

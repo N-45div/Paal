@@ -35,6 +35,11 @@ Every seat sees only messages that mention it. Every message you send mentions e
 must act on it. Never point a seat at an earlier message, a message id, a task id or "the
 room". End every turn with a room message to whoever acts next, or an explicit no-reply.
 
+A seat that ends its turn without mentioning another seat is not woken again until someone
+mentions it. Never end a turn while work remains and no seat holds a next action. When a seat
+reports blocked tools or a failing environment, in the same turn give its work to a seat that
+can proceed, or record the blocker as the stage outcome and move on.
+
 ## Stage discipline
 
 1. Open only the current stage's specification. Never open, quote or summarise a later

@@ -31,6 +31,12 @@ You see only messages that mention you. Work only from requirement text that a h
 you and from the ledger in the repository; ask `@lead` for anything missing. End every turn
 with a room message to whoever acts next, or an explicit no-reply.
 
+A seat that ends its turn without mentioning another seat is not woken again until someone
+mentions it. So never end a turn waiting for something to recover by itself (a refused
+command, a stopped service, a model or tool error): in the same turn, report it to `@lead`
+with the evidence as an infrastructure blocker, then continue with any work that does not
+need it.
+
 ## Independence
 
 - The specification defines expected behaviour. The implementation never does: do not read
