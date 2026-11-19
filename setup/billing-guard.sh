@@ -8,6 +8,7 @@
 # up the subscription login (settings without apiKeyHelper).
 # Phase 2 (fall back): if the room then shows a usage-limit error from a seat, restore the API
 # key settings saved in ~/.claude/settings.apikey.json and restart the seats again.
+# START_PHASE=2 skips phase 1 when the seats already start on the subscription.
 # It only restarts runtimes and swaps a settings file; it never posts in the room.
 set -uo pipefail
 ROOM="$1"; SINCE="$2"; CAP="$3"; shift 3; SEATS=("$@")
@@ -15,7 +16,7 @@ KIT="$(cd "$(dirname "$0")" && pwd)"
 log() { echo "$(date -u +%FT%TZ) $*"; }
 restart_all() { for s in "${SEATS[@]}"; do band restart --as "$s" >/dev/null 2>&1 && log "restarted $s"; sleep 90; done; }
 
-phase=1
+phase=${START_PHASE:-1}; since2=$(date -u +%FT%TZ)
 while :; do
   if [ $phase = 1 ]; then
     spent=$(python3 "$KIT/spend.py" --since "$SINCE" | awk '/^claude-/{s+=$NF} END{print s+0}')
