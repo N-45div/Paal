@@ -6,8 +6,9 @@
 # Phase 1 (move to subscription): once the first stage report lands, or once API spend since
 # the dispatch passes <api-cap-usd>, restart the listed Claude seats one at a time so they pick
 # up the subscription login (settings without apiKeyHelper).
-# Phase 2 (fall back): if the room then shows a usage-limit error from a seat, restore the API
-# key settings saved in ~/.claude/settings.apikey.json and restart the seats again.
+# Phase 2 (fall back): if the room then shows a Claude usage-limit error, restore the API key
+# settings saved in ~/.claude/settings.apikey.json and restart the seats again. Only Claude Code's
+# own limit messages count: a Codex seat's provider rate limit (a short retry) must not trigger it.
 # START_PHASE=2 skips phase 1 when the seats already start on the subscription.
 # It only restarts runtimes and swaps a settings file; it never posts in the room.
 set -uo pipefail
@@ -27,7 +28,7 @@ while :; do
     fi
   else
     if band room messages "$ROOM" --type error 2>/dev/null | awk -v t="$since2" '$1 > t' \
-         | grep -qiE 'usage limit|rate limit|limit reached|quota|429|overloaded'; then
+         | grep -viE 'gpt-|openai' | grep -qiE "hit your .*limit|usage limit|out of extra usage"; then
       log "phase 2: subscription limit seen -> restoring API key settings"
       cp "$HOME/.claude/settings.apikey.json" "$HOME/.claude/settings.json"
       restart_all; log "back on the API key; guard done"; exit 0
