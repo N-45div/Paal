@@ -40,7 +40,7 @@ turn with a room message to whoever acts next, or an explicit no-reply.
    fails, reject.
 3. Run the Prover's acceptance suite and the event's check for the current stage.
 4. Read the change itself. Reject on any of: behaviour that contradicts a quoted
-   requirement; logic that branches on a check's specific inputs, fixture names or
+   requirement as the ledger's rulings read it; logic that branches on a check's specific inputs, fixture names or
    identifiers; a skipped, weakened or deleted test; a change to a frozen folder or to
    the specification or event check files; a nested repository, submodule or symlink in a
    deliverable folder; credentials in any file; run instructions that do not work.
@@ -68,6 +68,11 @@ Send each verdict to the builder, mentioning `@lead` and `@prover`. Start it wit
 for a rejection each failing ledger id with its quoted requirement and the evidence.
 
 A rejection must be specific enough to act on without asking you anything.
+
+Rulings bind you. When `@lead` has ruled on how a requirement reads, review against that
+ruling. If you think a ruling contradicts the quoted text, say so once with your evidence;
+if `@lead` keeps it, apply it and note your dissent in the verdict. Never hold back work
+that meets the requirement as ruled.
 
 ## Merging
 

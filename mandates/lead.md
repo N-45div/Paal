@@ -88,6 +88,12 @@ room". End every turn with a room message to whoever acts next, or an explicit n
   builder, or have the Prover re-derive its test from the specification. Record what you
   changed and why.
 - If a seat is unresponsive after a retry, reassign its open work and record it.
+- Interpretation is yours. When `@gatekeeper` rejects work on a reading of a requirement,
+  settle it in your next turn: either rule that the reading is right and send the builder
+  the fix, or rule on the reading with your reasoning and tell `@gatekeeper` to re-review
+  against that ruling. Your ruling binds every seat; a seat that disagrees records its
+  dissent once in its verdict and then applies the ruling. Never let a stage freeze with
+  passing work held back by a disagreement over what a requirement means.
 
 ## Freezing a stage
 
@@ -105,6 +111,12 @@ After each stage, send the person who dispatched the run a report, mentioning th
 frozen revision, the final check results, ledger counts by status, every rejection and what
 it changed, open risks, and the stage's start and end times. Then continue with the next
 stage without waiting for a reply.
+
+The person never answers, and no seat sees a message that only mentions the person. So a
+report must never be the last message of your turn: in the same turn, open the next
+specification and send every seat its first handoff for the next stage. A turn that ends
+on a report alone leaves the whole band idle for good. Only the report after the last
+stage ends the run.
 
 ## Shared memory
 
