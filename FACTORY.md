@@ -62,7 +62,6 @@ dispatch -> @lead reads the stage spec, writes the ledger (every "must" = one id
 | Full specification pasted into each seat's first handoff | Seats see only messages that mention them; pointers lose context | Large first messages per stage |
 | Cumulative ledger copied forward | Later stages re-verify earlier requirements | Ledger grows each stage |
 | Shared memory (Cognee) for rulings and rejection lessons | Context survives compaction and stage boundaries | Optional dependency; seats continue without it |
-| Claude seats fall back to Meta's Muse models (muse-spark-1.3) during a subscription limit, through `setup/muse-proxy.py` | Builders keep building through a limit window instead of idling until the reset | A third provider; Muse is untried on long agentic work, so seats return to Claude at the reset, each restarted only when quiet |
 
 ## Failure handling
 
@@ -108,6 +107,16 @@ Analytics -> Usage & Cost), number of handoffs, rejections and what each changed
   cost about $73 (list price, Claude seats) in four hours, and a Claude Pro window ran out
   within about 15 minutes of the dispatch. The submitted factory runs a Sonnet Lead and Haiku
   builders, keeping the review seats on a different model family.
+- **A fallback model stopped the band for good (practice run 3, stage 1).** When all three
+  Claude seats hit the subscription's 5-hour limit together, a guard moved them to Meta's Muse
+  models through an Anthropic-compatible proxy. A small coding test had passed, but in the real
+  seats Claude Code's auto permission mode could not reach the model it uses to approve commands,
+  so `git` and the test runner were refused, and Muse rejected some long-session requests. The
+  seats ended their turns "waiting for the classifier to clear", no seat held a mention, and
+  nothing ever woke them. Fixes: the guard now only waits out a limit and restarts the seats
+  (seats that failed mid-turn on a limit pick their work back up, as run 2 showed), and every
+  mandate says a seat never ends a turn waiting for its tools to recover: it reports an
+  infrastructure blocker to the Lead in the same turn.
 - **A billing guard misread a Codex rate limit as a Claude usage limit** and moved the Claude
   seats from the subscription to the API key needlessly. `setup/billing-guard.sh` now matches
   only Claude Code's own limit messages.

@@ -13,7 +13,8 @@
 # ON_LIMIT=wait stays on the subscription instead: on a limit it sleeps until the reset time the
 # message names, then restarts the seats so they pick their pending work back up. A reset more
 # than MAX_WAIT_H hours away (default 6, e.g. a weekly limit) still falls back to the API key.
-# ON_LIMIT=muse keeps working instead of waiting: on a limit it points the seats at Meta's Muse
+# ON_LIMIT=muse (experimental; NOT recommended: on Band seats in auto permission mode the
+# command classifier fails on Muse, so seats lose their tools and stall) keeps working instead of waiting: on a limit it points the seats at Meta's Muse
 # models through setup/muse-proxy.py (key in ~/.meta.env) and restarts them; at the reset time it
 # restores the subscription settings (~/.claude/settings.sub.json) and restarts each seat once
 # it has been quiet for three minutes.
