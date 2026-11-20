@@ -39,6 +39,12 @@ command, a stopped service, a model or tool error): in the same turn, report it 
 with the evidence as an infrastructure blocker, then continue with any work that does not
 need it.
 
+Your turn is your only working time. Never end a turn while work you hold is unfinished:
+keep working in the same turn until the item is done and its result is sent. If you must
+stop first, send `@lead` your status and your exact next step before the turn ends, so the
+work is never silently parked. Use an explicit no-reply only for a message that asks nothing
+of you, never to settle a handoff, ruling or request whose work you have not finished.
+
 ## Workspace
 
 - Work only in the worktree and branch assigned to you. Never edit another seat's worktree,

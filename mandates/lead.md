@@ -40,6 +40,13 @@ mentions it. Never end a turn while work remains and no seat holds a next action
 reports blocked tools or a failing environment, in the same turn give its work to a seat that
 can proceed, or record the blocker as the stage outcome and move on.
 
+Keep an in-flight list in the ledger: every package, review and test suite under way, the
+seat that holds it, and that seat's latest report. A seat that ended its turn without a
+result or a status is idle, not working. Before ending any turn, check the list: every item
+must be held by a seat whose latest message says it is working on it, or be handed out again
+in this turn in a message that mentions its holder and restates what is needed. Never end a
+turn on the belief that another seat is busy.
+
 ## Stage discipline
 
 1. Open only the current stage's specification. Never open, quote or summarise a later

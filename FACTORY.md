@@ -60,8 +60,9 @@ Seats act only when a message mentions them, so nothing would ever move. A resta
 seat resume its own open tasks, and Builder B went straight back to work. Restarting sends
 nothing into the room, so it is not steering. [`setup/idle-restart.sh`](setup/idle-restart.sh)
 now restarts all seats when the room has been idle for 20 minutes, at most once every 30
-minutes. The mandate-level fix belongs in the next version: a builder never ends a turn with
-its package unfinished, and the Lead asks after a package that has gone quiet. None of this was posted
+minutes. The mandate-level fix is now in the mandates (see "What we tried that failed"): a
+seat never ends a turn with its work unfinished and unreported, and the Lead treats a quiet
+seat as idle. None of this was posted
 in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
 the model through a local `model_provider` in `~/.codex/config.toml` pointing at
 [`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta
@@ -172,6 +173,18 @@ Analytics -> Usage & Cost), number of handoffs, rejections and what each changed
   (seats that failed mid-turn on a limit pick their work back up, as run 2 showed), and every
   mandate says a seat never ends a turn waiting for its tools to recover: it reports an
   infrastructure blocker to the Lead in the same turn.
+- **The review seat on a weaker model stopped the band for good (run 4, stage 2).** After
+  the OpenAI quota ran out, the Gatekeeper ran on muse-spark-1.3. It lost track of long
+  reviews: it re-reviewed a package it had already merged, narrated the same status line
+  dozens of times without acting, and at 17:07Z on Nov 20 settled its last pending message
+  with a no-reply while its review was unfinished. With no message pending for any seat,
+  restarts had nothing to resume, and the rules forbid posting in the room, so the run
+  stopped with stage 2 partly merged. Proxy-side end checks (above) reduced early stops but
+  could not fix this. Fixes in the mandates: a seat never ends a turn holding unfinished work
+  without telling `@lead` its status and next step, and never no-replies a handoff it has not
+  finished; the Lead keeps an in-flight list and treats a seat that stopped without reporting
+  as idle; the Gatekeeper keeps a review queue, skips commits already merged and gives every
+  handoff a verdict. The review seat needs a model that holds long tasks.
 - **A billing guard misread a Codex rate limit as a Claude usage limit** and moved the Claude
   seats from the subscription to the API key needlessly. `setup/billing-guard.sh` now matches
   only Claude Code's own limit messages.

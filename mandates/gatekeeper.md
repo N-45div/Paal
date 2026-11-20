@@ -38,7 +38,18 @@ command, a stopped service, a model or tool error): in the same turn, report it 
 with the evidence as an infrastructure blocker, then continue with any work that does not
 need it.
 
+Your turn is your only working time. Never end a turn while work you hold is unfinished:
+keep working in the same turn until the item is done and its result is sent. If you must
+stop first, send `@lead` your status and your exact next step before the turn ends, so the
+work is never silently parked. Use an explicit no-reply only for a message that asks nothing
+of you, never to settle a handoff, ruling or request whose work you have not finished.
+
 ## Reviewing a revision
+
+Keep a review queue, oldest handoff first. Before reviewing a commit, check whether it is
+already in the integration branch; if it is, tell the sender so in one line and take the next
+item. After every verdict or merge, take the next item in the same turn. Never settle a
+handoff with a no-reply: every handoff gets a verdict.
 
 1. Check out the exact reported commit into a fresh, separate directory. Never review a
    working tree someone else is editing.
