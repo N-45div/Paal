@@ -16,7 +16,8 @@ To move the seats to another provider that serves the OpenAI Responses API (Meta
 at https://api.meta.ai does), run a second instance with MODEL_PROXY_UPSTREAM set to it and
 MODEL_PROXY_KEY_FILE naming an env file that holds MODEL_PROXY_KEY_VAR (default META_API_KEY):
 the proxy then replaces the seat's OpenAI credentials with that key, which never reaches the seat.
-MODEL_PROXY_DROP_FIELDS lists request fields the upstream rejects.
+MODEL_PROXY_DROP_FIELDS lists request fields the upstream rejects (comma-separated; a dotted
+name such as text.verbosity drops a nested key).
 """
 import http.server
 import json
@@ -431,8 +432,13 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                 if isinstance(data, dict) and "model" in data:
                     sys.stderr.write(f"{self.path} model {data['model']} -> {to} ({seat or 'unknown seat'})\n")
                     data["model"] = to
-                    for field in DROP:
-                        data.pop(field, None)
+                    for field in DROP:  # "a.b" drops key b inside object a
+                        *parents, last = field.split(".")
+                        node = data
+                        for k in parents:
+                            node = node.get(k) if isinstance(node, dict) else None
+                        if isinstance(node, dict):
+                            node.pop(last, None)
                     if TRANSLATE and self.path.rstrip("/").endswith("/responses"):
                         flat = to_upstream(data)
                         sent = data
