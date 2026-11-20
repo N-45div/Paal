@@ -20,6 +20,23 @@ different specification and it runs the same way.
 
 Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what it builds.
 
+**Mid-run model changes (judged run).** The Codex seats ran stage 1 on gpt-6.1-terra. Stage 1
+alone used about 530M input tokens, so after the freeze both were moved to gpt-6-luna. At
+08:19Z on Nov 20, early in stage 2, the OpenAI account ran out of quota. At 08:41Z both seats
+moved to Meta's muse-spark-1.3, which serves the OpenAI Responses API. None of this was posted
+in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
+the model through a local `model_provider` in `~/.codex/config.toml` pointing at
+[`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta
+also does two more things:
+- it sends Meta's key, so the key never reaches the seat;
+- it translates Codex's tool format (namespaced tools and the freeform `exec` tool, which
+  Meta does not accept) into plain function tools and back.
+
+Before the seats moved, the translation was tested on a scratch task: write code, write a
+pytest suite, run it and commit. [`setup/switch-codex-model.sh`](setup/switch-codex-model.sh)
+restarts each seat only after it has been quiet for three minutes, then checks the proxy log.
+If no seat request reaches the new model within 20 minutes, it reverts.
+
 ## One stage, end to end
 
 ```text
