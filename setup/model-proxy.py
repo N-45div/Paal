@@ -184,7 +184,9 @@ def to_upstream(data):
     def up_name(it):
         return by_key.get((it.get("namespace"), it.get("name"))) or by_name.get(it.get("name")) or it.get("name")
 
-    calls, new = set(), []
+    # Meta wants exactly one output per call. Codex history can repeat a call or its output
+    # (seen after a retried turn), so the first of each is kept and repeats are dropped.
+    calls, answered, new = set(), set(), []
     for it in items:
         if not isinstance(it, dict):
             continue
@@ -198,11 +200,14 @@ def to_upstream(data):
                            and c.get("type") in ("input_text", "output_text", "input_image")]
             new.append({"type": "message", "role": it.get("role"), "content": content})
         elif kind in ("function_call", "custom_tool_call"):
+            if it.get("call_id") in calls:
+                continue
             args = it.get("arguments") if kind == "function_call" else json.dumps({"input": it.get("input", "")})
             calls.add(it.get("call_id"))
             new.append({"type": "function_call", "call_id": it.get("call_id"), "name": up_name(it),
                         "arguments": args or "{}"})
-        elif it.get("call_id") in calls:
+        elif it.get("call_id") in calls and it.get("call_id") not in answered:
+            answered.add(it.get("call_id"))
             new.append({"type": "function_call_output", "call_id": it.get("call_id"),
                         "output": text_of(it.get("output"))})
     if isinstance(raw, list):
