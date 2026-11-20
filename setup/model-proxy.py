@@ -125,13 +125,21 @@ def replied_this_turn(data):
                for i in items[start + 1:])
 
 
-def check_allowed(data, every=600):
-    """At most one end check per conversation every ten minutes, so it can never loop."""
+CHECKS_PER_WINDOW = int(os.environ.get("MODEL_PROXY_END_CHECKS", "4"))
+
+
+def check_allowed(data, window=600):
+    """At most MODEL_PROXY_END_CHECKS end checks (default 4) per conversation in any ten
+    minutes, so it can never loop. A restart starts a new conversation and loses the seat's
+    context, so keeping a turn alive here is worth several re-asks."""
     import time
     key = data.get("prompt_cache_key") or "default"
-    if time.time() - LAST_CHECK.get(key, 0) < every:
+    now = time.time()
+    recent = [t for t in LAST_CHECK.get(key, []) if now - t < window]
+    if len(recent) >= CHECKS_PER_WINDOW:
+        LAST_CHECK[key] = recent
         return False
-    LAST_CHECK[key] = time.time()
+    LAST_CHECK[key] = recent + [now]
     return True
 
 
