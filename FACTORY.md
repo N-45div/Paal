@@ -44,7 +44,21 @@ controls and completing the re-handoff" without sending the handoff, and was res
 tool call and its last message reads as an intention (for example "now ..." or "— sending
 ..."), the proxy asks the model once more, in the same response stream, to do what it said
 or to answer "done". This happens at most once per conversation every ten minutes, so it
-cannot loop. None of this was posted
+cannot loop.
+
+**The band went idle with no message left to answer (judged run, stage 2).** At 10:25Z every
+seat had ended its turn:
+- Builder B had answered the Lead's rulings but not handed off its package.
+- Builder A was waiting for Builder B's module to reach main.
+- The Lead believed both builders were still working.
+- The Gatekeeper had set aside the review it had announced.
+
+Seats act only when a message mentions them, so nothing would ever move. A restart makes each
+seat resume its own open tasks, and Builder B went straight back to work. Restarting sends
+nothing into the room, so it is not steering. [`setup/idle-restart.sh`](setup/idle-restart.sh)
+now restarts all seats when the room has been idle for 20 minutes, at most once every 30
+minutes. The mandate-level fix belongs in the next version: a builder never ends a turn with
+its package unfinished, and the Lead asks after a package that has gone quiet. None of this was posted
 in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
 the model through a local `model_provider` in `~/.codex/config.toml` pointing at
 [`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta
