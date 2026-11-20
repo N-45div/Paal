@@ -23,7 +23,10 @@ Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what i
 **Mid-run model changes (judged run).** The Codex seats ran stage 1 on gpt-6.1-terra. Stage 1
 alone used about 530M input tokens, so after the freeze both were moved to gpt-6-luna. At
 08:19Z on Nov 20, early in stage 2, the OpenAI account ran out of quota. At 08:41Z both seats
-moved to Meta's muse-spark-1.3, which serves the OpenAI Responses API. None of this was posted
+moved to Meta's muse-spark-1.3, which serves the OpenAI Responses API. At 08:49Z the Gatekeeper
+moved to muse-wonder-1.0, which was about 3x faster in a probe. The Gatekeeper is the queue
+every review and check waits on, and the move also keeps test writer and reviewer on
+different models. The proxy finds the calling seat from the socket's owning process. None of this was posted
 in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
 the model through a local `model_provider` in `~/.codex/config.toml` pointing at
 [`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta

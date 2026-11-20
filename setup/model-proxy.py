@@ -7,8 +7,8 @@ Band fixes each seat's model when the seat is created and has no command to chan
 new seat would get a new room identity the other seats do not know. This proxy sits between
 the seats and OpenAI: Codex reaches it through a model provider in ~/.codex/config.toml, and
 the proxy rewrites the request's `model` to the id in the target file (default
-~/.paal-model-target), re-read on every request. An empty or missing file passes requests
-through unchanged, so the switch can be armed ahead of time and flipped at a stage boundary.
+~/.paal-model-target), re-read on every request; lines of `<JAM_SESSION>=<model>` give each
+seat its own model. An empty or missing file passes requests through unchanged, so the switch can be armed ahead of time and flipped at a stage boundary.
 The seat's own Authorization header is forwarded as is; the proxy holds no key. Responses,
 including streamed ones, pass through unchanged. Standard library only.
 
@@ -47,11 +47,38 @@ def load_key():
 KEY = load_key()
 
 
-def target():
+def seat_of(port):
+    """JAM_SESSION of the local process that owns the client socket on `port` (Linux only)."""
     try:
-        return open(TARGET_FILE, encoding="utf-8").read().strip()
+        inode = next((f[9] for f in (l.split() for l in open("/proc/net/tcp"))
+                      if len(f) > 9 and f[1] == "0100007F:%04X" % port), None)
     except OSError:
         return ""
+    if not inode:
+        return ""
+    want = f"socket:[{inode}]"
+    for pid in filter(str.isdigit, os.listdir("/proc")):
+        try:
+            if "codex" not in open(f"/proc/{pid}/comm").read():
+                continue
+            if any(os.readlink(f"/proc/{pid}/fd/{fd}") == want for fd in os.listdir(f"/proc/{pid}/fd")):
+                env = open(f"/proc/{pid}/environ", "rb").read().split(b"\0")
+                return next((e[12:].decode() for e in env if e.startswith(b"JAM_SESSION=")), "")
+        except OSError:
+            continue
+    return ""
+
+
+def target(seat=""):
+    """The model for a seat. The target file holds one model id for every seat, or lines of
+    `<JAM_SESSION>=<model>` with an optional `*=<model>` default; re-read on every request."""
+    try:
+        lines = [l.strip() for l in open(TARGET_FILE, encoding="utf-8") if l.strip()]
+    except OSError:
+        return ""
+    pairs = dict(l.split("=", 1) for l in lines if "=" in l)
+    plain = [l for l in lines if "=" not in l]
+    return pairs.get(seat) or pairs.get("*") or (plain[0] if plain else "")
 
 
 TRANSLATE = os.environ.get("MODEL_PROXY_TRANSLATE") == "1"
@@ -271,12 +298,13 @@ class Proxy(http.server.BaseHTTPRequestHandler):
 
     def do_POST(self):
         body = self.rfile.read(int(self.headers.get("content-length") or 0))
-        to, flat = target(), None
+        seat = seat_of(self.client_address[1])
+        to, flat = target(seat), None
         if to and not self.headers.get("content-encoding"):
             try:
                 data = json.loads(body)
                 if isinstance(data, dict) and "model" in data:
-                    sys.stderr.write(f"{self.path} model {data['model']} -> {to}\n")
+                    sys.stderr.write(f"{self.path} model {data['model']} -> {to} ({seat or 'unknown seat'})\n")
                     data["model"] = to
                     for field in DROP:
                         data.pop(field, None)
