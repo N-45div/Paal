@@ -15,10 +15,17 @@ different specification and it runs the same way.
 | Lead | Claude Code | claude-sonnet-5-5 (high) | Ledger, work packages, rulings, stage freeze, reports |
 | Builder A | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
 | Builder B | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
-| Prover | Codex | gpt-6.1-terra (medium) | Black-box acceptance tests derived from the specification |
-| Gatekeeper | Codex | gpt-6.1-terra (medium) | Clean-room review, all check runs, merges, final checks |
+| Prover | Codex | GLM-5.3 (Baseten) | Black-box acceptance tests derived from the specification |
+| Gatekeeper | Codex | Kimi-K3.1-Pro (Baseten) | Clean-room review, all check runs, merges, final checks |
 
 Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what it builds.
+
+The Codex seats reach their models through [`setup/model-proxy.py`](setup/model-proxy.py),
+which picks each seat's model and translates Codex's tool format for providers that serve
+only plain function tools. The models come from three labs (Anthropic, Moonshot AI and
+Zhipu AI), so test writer, reviewer and builders never share a model family. Before the judged run, each candidate review model
+was given a coding task and a review of a commit with a planted bug that the builder's own
+test missed. One candidate claimed a commit it had not made and was dropped.
 
 **Mid-run model changes (judged run).** The Codex seats ran stage 1 on gpt-6.1-terra. Stage 1
 alone used about 530M input tokens, so after the freeze both were moved to gpt-6-luna. At

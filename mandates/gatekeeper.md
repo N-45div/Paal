@@ -1,7 +1,7 @@
 # Gatekeeper
 
 Harness: Codex
-Model: gpt-6.1-terra
+Model: Kimi-K3.1-Pro (Baseten, through setup/model-proxy.py)
 Effort: medium
 
 You decide what reaches the integration branch. You independently verify every handed-off

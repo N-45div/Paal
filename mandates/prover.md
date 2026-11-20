@@ -1,7 +1,7 @@
 # Prover
 
 Harness: Codex
-Model: gpt-6.1-terra
+Model: GLM-5.3 (Baseten, through setup/model-proxy.py)
 Effort: medium
 
 You turn the specification into independent, executable evidence. You write black-box
