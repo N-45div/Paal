@@ -26,7 +26,14 @@ alone used about 530M input tokens, so after the freeze both were moved to gpt-6
 moved to Meta's muse-spark-1.3, which serves the OpenAI Responses API. At 08:49Z the Gatekeeper
 moved to muse-wonder-1.0, which was about 3x faster in a probe. The Gatekeeper is the queue
 every review and check waits on, and the move also keeps test writer and reviewer on
-different models. The proxy finds the calling seat from the socket's owning process. None of this was posted
+different models. The proxy finds the calling seat from the socket's owning process.
+On its first turn on Muse, the Gatekeeper merged an update, wrote "sending the consolidated
+report now", marked its 17 queued messages as needing no reply, and ended the turn without
+sending anything. From 08:55Z the proxy appends a short harness note,
+[`setup/codex-adapter-note.md`](setup/codex-adapter-note.md), to the Muse seats'
+instructions. It says nothing about the task. It tells the model that plain assistant text
+reaches nobody and that it must make the reply call before ending a turn, which GPT models
+running in Codex already know. None of this was posted
 in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
 the model through a local `model_provider` in `~/.codex/config.toml` pointing at
 [`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta

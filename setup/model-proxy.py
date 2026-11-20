@@ -86,6 +86,16 @@ KEEP_INPUT = ("message", "function_call", "function_call_output",
               "custom_tool_call", "custom_tool_call_output")
 
 
+def adapter_note():
+    """Optional harness note for a model that does not know Codex's conventions (text of
+    MODEL_PROXY_NOTE_FILE, re-read on every request; appended to the instructions)."""
+    path = os.environ.get("MODEL_PROXY_NOTE_FILE")
+    try:
+        return open(os.path.expanduser(path), encoding="utf-8").read().strip() if path else ""
+    except OSError:
+        return ""
+
+
 def text_of(output):
     """A tool output as plain text (the upstream may not take content lists)."""
     if isinstance(output, str):
@@ -168,6 +178,9 @@ def to_upstream(data):
                         "output": text_of(it.get("output"))})
     if isinstance(raw, list):
         data["input"] = new
+    note = adapter_note()
+    if note:
+        data["instructions"] = ((data.get("instructions") or "") + "\n\n" + note).strip()
     if out_tools:
         data["tools"] = out_tools
     else:
