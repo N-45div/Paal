@@ -30,6 +30,7 @@ import urllib.request
 UPSTREAM = os.environ.get("MODEL_PROXY_UPSTREAM", "https://api.openai.com")
 TARGET_FILE = os.path.expanduser(os.environ.get("MODEL_PROXY_TARGET", "~/.paal-model-target"))
 DROP = [f for f in os.environ.get("MODEL_PROXY_DROP_FIELDS", "").split(",") if f]
+MAX_OUTPUT = int(os.environ.get("MODEL_PROXY_MAX_OUTPUT") or 0)
 OPENAI_ONLY = ("authorization", "openai-organization", "openai-project", "chatgpt-account-id")
 
 
@@ -446,6 +447,10 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                 if isinstance(data, dict) and "model" in data:
                     sys.stderr.write(f"{self.path} model {data['model']} -> {to} ({seat or 'unknown seat'})\n")
                     data["model"] = to
+                    # Some providers default to a small output limit (GLM on Baseten: 4096),
+                    # which a long reasoning step uses up; MODEL_PROXY_MAX_OUTPUT raises it.
+                    if MAX_OUTPUT and "max_output_tokens" not in data:
+                        data["max_output_tokens"] = MAX_OUTPUT
                     for field in DROP:  # "a.b" drops key b inside object a
                         *parents, last = field.split(".")
                         node = data
