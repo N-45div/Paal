@@ -44,7 +44,10 @@ controls and completing the re-handoff" without sending the handoff, and was res
 tool call and its last message reads as an intention (for example "now ..." or "— sending
 ..."), the proxy asks the model once more, in the same response stream, to do what it said
 or to answer "done". This happens at most once per conversation every ten minutes, so it
-cannot loop.
+cannot loop. Wording alone missed endings such as "Continuing the engine-scoped P5
+verification.", which stopped the Gatekeeper mid-review several times in stage 2, so from
+16:39Z the check also runs whenever a turn ends without a room reply or no-reply call, since
+every Band turn ends with one of them.
 
 **The band went idle with no message left to answer (judged run, stage 2).** At 10:25Z every
 seat had ended its turn:

@@ -88,13 +88,16 @@ CHECK_END = TRANSLATE and os.environ.get("MODEL_PROXY_END_CHECK", "1") == "1"
 END_CHECK = ("Harness check before your turn ends: plain assistant text reaches nobody. If your last "
              "message said you would do, verify, send, report, reply or hand off anything that you have "
              "not yet done with a tool call in this turn, do it now with tool calls (send replies to "
-             "other agents with the room tools). If everything is done and every needed reply has been "
-             "sent, answer with only the word: done.")
+             "other agents with the room tools). A turn ends only when the work it started is finished "
+             "and reported with the room tools, or explicitly settled with the no-reply tool. If "
+             "everything is done and every needed reply has been sent, answer with only the word: done.")
 KEEP_INPUT = ("message", "function_call", "function_call_output",
               "custom_tool_call", "custom_tool_call_output")
 
 
-PROMISE = re.compile(r"\b(now|next|i'll|i will|let me|going to|about to)\b|[—–-]\s*(and\s+)?\w+ing\b", re.I)
+PROMISE = re.compile(r"\b(now|next|i'll|i will|let me|going to|about to|continu\w*|proceed\w*|resum\w*)\b"
+                     r"|[—–-]\s*(and\s+)?\w+ing\b", re.I)
+REPLY_TOOLS = ("jam_reply_to_message", "jam_no_reply")
 LAST_CHECK = {}
 
 
@@ -103,6 +106,16 @@ def promises_more(items):
     text = " ".join(c.get("text", "") for it in items if it.get("type") == "message"
                     for c in it.get("content") or [] if isinstance(c, dict))
     return bool(PROMISE.search(text))
+
+
+def replied_this_turn(data):
+    """True when a room reply or no-reply call follows the latest user message. A Band seat's
+    turn always ends with one of them; a turn without either was cut short."""
+    items = [i for i in (data.get("input") or []) if isinstance(i, dict)]
+    start = max((n for n, i in enumerate(items) if i.get("role") == "user"), default=-1)
+    return any(i.get("type") == "function_call"
+               and any(t in (i.get("name", "") + (i.get("arguments") or "")) for t in REPLY_TOOLS)
+               for i in items[start + 1:])
 
 
 def check_allowed(data, every=600):
@@ -290,7 +303,8 @@ class Proxy(http.server.BaseHTTPRequestHandler):
             return
         if (CHECK_END and upstream_data is not None and not state["tool"]
                 and held.get("response", {}).get("status", "completed") == "completed"
-                and promises_more(state["items"]) and check_allowed(upstream_data)):
+                and (promises_more(state["items"]) or not replied_this_turn(upstream_data))
+                and check_allowed(upstream_data)):
             follow = self._end_check(upstream_data, state["items"])
             if follow is not None:
                 second = self._pump(follow, flat, offset=len(state["items"]), first=False)
