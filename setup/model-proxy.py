@@ -98,6 +98,11 @@ KEEP_INPUT = ("message", "function_call", "function_call_output",
 PROMISE = re.compile(r"\b(now|next|i'll|i will|let me|going to|about to|continu\w*|proceed\w*|resum\w*)\b"
                      r"|[—–-]\s*(and\s+)?\w+ing\b", re.I)
 REPLY_TOOLS = ("jam_reply_to_message", "jam_no_reply")
+NO_REPLY_CHECK = ("Harness check before your turn ends: in this turn you have not called the room reply "
+                  "tool or the no-reply tool, so nobody has heard from you and nobody will wake you. Do "
+                  "not answer with text. Either continue the work you started now with tool calls, or "
+                  "send your current status and what you will do next to whoever is waiting on you with "
+                  "the room reply tool, mentioning them.")
 LAST_CHECK = {}
 
 
@@ -305,7 +310,8 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                 and held.get("response", {}).get("status", "completed") == "completed"
                 and (promises_more(state["items"]) or not replied_this_turn(upstream_data))
                 and check_allowed(upstream_data)):
-            follow = self._end_check(upstream_data, state["items"])
+            note = END_CHECK if replied_this_turn(upstream_data) else NO_REPLY_CHECK
+            follow = self._end_check(upstream_data, state["items"], note)
             if follow is not None:
                 second = self._pump(follow, flat, offset=len(state["items"]), first=False)
                 if second["completed"] is not None:
@@ -363,7 +369,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
             if not line:
                 return state
 
-    def _end_check(self, data, items):
+    def _end_check(self, data, items, note=END_CHECK):
         """Ask once more when the model ends its turn: undone promises get done now."""
         said = [c.get("text", "") for it in items if it.get("type") == "message"
                 for c in it.get("content") or [] if isinstance(c, dict)]
@@ -371,7 +377,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
         follow["input"] = list(data.get("input") or []) + [
             {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": t}]}
             for t in said if t.strip()] + [
-            {"type": "message", "role": "developer", "content": [{"type": "input_text", "text": END_CHECK}]}]
+            {"type": "message", "role": "developer", "content": [{"type": "input_text", "text": note}]}]
         body = json.dumps(follow).encode()
         req = urllib.request.Request(UPSTREAM + self.path, data=body, method="POST", headers={
             "content-type": "application/json", "authorization": "Bearer " + KEY,
