@@ -37,7 +37,14 @@ sending anything. From 08:55Z the proxy appends a short harness note,
 [`setup/codex-adapter-note.md`](setup/codex-adapter-note.md), to the Muse seats'
 instructions. It says nothing about the task. It tells the model that plain assistant text
 reaches nobody and that it must make the reply call before ending a turn, which GPT models
-running in Codex already know. None of this was posted
+running in Codex already know.
+The note did not fully stop this. At 09:34Z the Prover ended its turn on "verifying the
+controls and completing the re-handoff" without sending the handoff, and was restarted at
+10:02Z. From 10:15Z the proxy also checks the end of each turn. When a Muse turn ends with no
+tool call and its last message reads as an intention (for example "now ..." or "— sending
+..."), the proxy asks the model once more, in the same response stream, to do what it said
+or to answer "done". This happens at most once per conversation every ten minutes, so it
+cannot loop. None of this was posted
 in the room, and no seat was recreated. Band fixes a seat's model at creation, so Codex reaches
 the model through a local `model_provider` in `~/.codex/config.toml` pointing at
 [`setup/model-proxy.py`](setup/model-proxy.py). The proxy rewrites the model id, and for Meta

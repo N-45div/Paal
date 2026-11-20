@@ -82,8 +82,37 @@ def target(seat=""):
 
 
 TRANSLATE = os.environ.get("MODEL_PROXY_TRANSLATE") == "1"
+# With translation on, a turn that ends without a tool call is checked once: the model is asked
+# whether anything it said it would do is still undone (MODEL_PROXY_END_CHECK=0 turns this off).
+CHECK_END = TRANSLATE and os.environ.get("MODEL_PROXY_END_CHECK", "1") == "1"
+END_CHECK = ("Harness check before your turn ends: plain assistant text reaches nobody. If your last "
+             "message said you would do, verify, send, report, reply or hand off anything that you have "
+             "not yet done with a tool call in this turn, do it now with tool calls (send replies to "
+             "other agents with the room tools). If everything is done and every needed reply has been "
+             "sent, answer with only the word: done.")
 KEEP_INPUT = ("message", "function_call", "function_call_output",
               "custom_tool_call", "custom_tool_call_output")
+
+
+PROMISE = re.compile(r"\b(now|next|i'll|i will|let me|going to|about to)\b|[—–-]\s*(and\s+)?\w+ing\b", re.I)
+LAST_CHECK = {}
+
+
+def promises_more(items):
+    """True when the turn's closing message reads as an intention ("now sending ...")."""
+    text = " ".join(c.get("text", "") for it in items if it.get("type") == "message"
+                    for c in it.get("content") or [] if isinstance(c, dict))
+    return bool(PROMISE.search(text))
+
+
+def check_allowed(data, every=600):
+    """At most one end check per conversation every ten minutes, so it can never loop."""
+    import time
+    key = data.get("prompt_cache_key") or "default"
+    if time.time() - LAST_CHECK.get(key, 0) < every:
+        return False
+    LAST_CHECK[key] = time.time()
+    return True
 
 
 def adapter_note():
@@ -237,7 +266,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
             self.wfile.write(b"%x\r\n%s\r\n" % (len(data), data))
             self.wfile.flush()
 
-    def _relay_translated(self, resp, flat):
+    def _relay_translated(self, resp, flat, upstream_data=None):
         """Pass the upstream response on with its tool calls mapped back (SSE or JSON)."""
         if "json" in (resp.headers.get("content-type") or ""):
             body = resp.read()
@@ -250,6 +279,31 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                 pass
             self._chunk(body)
             return
+        state = self._pump(resp, flat, offset=0, first=True)
+        held = state["completed"]
+        if held is None:
+            return
+        if (CHECK_END and upstream_data is not None and not state["tool"]
+                and held.get("response", {}).get("status", "completed") == "completed"
+                and promises_more(state["items"]) and check_allowed(upstream_data)):
+            follow = self._end_check(upstream_data, state["items"])
+            if follow is not None:
+                second = self._pump(follow, flat, offset=len(state["items"]), first=False)
+                if second["completed"] is not None:
+                    sys.stderr.write(f"end check: {'tool calls' if second['tool'] else 'no tool calls'} after re-ask\n")
+                    merged = second["completed"]
+                    merged.setdefault("response", {})["output"] = state["items"] + second["items"]
+                    held = merged
+        self._chunk(b"event: " + held.get("type", "response.completed").encode()
+                    + b"\ndata: " + json.dumps(held).encode() + b"\n\n")
+
+    def _pump(self, resp, flat, offset, first):
+        """Relay one upstream SSE stream, holding back its completion event.
+
+        Returns the held completion (None if the stream ended otherwise), the finished output
+        items, and whether any of them was a tool call. A second stream (the end check) drops
+        its start events and shifts output indexes past the first stream's items."""
+        state = {"completed": None, "items": [], "tool": False}
         custom_ids, block = set(), []
         while True:
             line = resp.readline()
@@ -257,27 +311,60 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                 block.append(line)
                 continue
             if block:
-                out = []
+                out, drop = [], False
                 for b in block:
-                    if b.startswith(b"data:"):
-                        try:
-                            ev = translate_event(json.loads(b[5:]), flat, custom_ids)
-                        except ValueError:
-                            out.append(b)
-                            continue
-                        if ev is None:
-                            out = None
-                            break
-                        out.append(b"data: " + json.dumps(ev).encode() + b"\n")
-                    else:
+                    if not b.startswith(b"data:"):
                         out.append(b)
-                if out is not None:
+                        continue
+                    try:
+                        ev = translate_event(json.loads(b[5:]), flat, custom_ids)
+                    except ValueError:
+                        out.append(b)
+                        continue
+                    if ev is None:
+                        drop = True
+                        break
+                    kind = ev.get("type", "")
+                    if kind in ("response.completed", "response.done"):
+                        state["completed"], drop = ev, True
+                        break
+                    if not first and kind in ("response.created", "response.in_progress"):
+                        drop = True
+                        break
+                    if offset and isinstance(ev.get("output_index"), int):
+                        ev["output_index"] += offset
+                    if kind == "response.output_item.done" and isinstance(ev.get("item"), dict):
+                        state["items"].append(ev["item"])
+                        if ev["item"].get("type") in ("function_call", "custom_tool_call"):
+                            state["tool"] = True
+                    out.append(b"data: " + json.dumps(ev).encode() + b"\n")
+                if not drop:
                     self._chunk(b"".join(out) + b"\n")
                 block = []
             if not line:
-                break
+                return state
 
-    def _forward(self, body, flat=None):
+    def _end_check(self, data, items):
+        """Ask once more when the model ends its turn: undone promises get done now."""
+        said = [c.get("text", "") for it in items if it.get("type") == "message"
+                for c in it.get("content") or [] if isinstance(c, dict)]
+        follow = dict(data, stream=True)
+        follow["input"] = list(data.get("input") or []) + [
+            {"type": "message", "role": "assistant", "content": [{"type": "output_text", "text": t}]}
+            for t in said if t.strip()] + [
+            {"type": "message", "role": "developer", "content": [{"type": "input_text", "text": END_CHECK}]}]
+        body = json.dumps(follow).encode()
+        req = urllib.request.Request(UPSTREAM + self.path, data=body, method="POST", headers={
+            "content-type": "application/json", "authorization": "Bearer " + KEY,
+            "content-length": str(len(body))})
+        try:
+            resp = urllib.request.urlopen(req, timeout=900)
+        except (urllib.error.URLError, OSError) as err:
+            sys.stderr.write(f"end check skipped: {err}\n")
+            return None
+        return resp if resp.status == 200 else None
+
+    def _forward(self, body, flat=None, upstream_data=None):
         headers = {k: v for k, v in self.headers.items()
                    if k.lower() not in ("host", "content-length", "accept-encoding", "connection")
                    and not (KEY and k.lower() in OPENAI_ONLY)}
@@ -298,7 +385,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
         self.send_header("transfer-encoding", "chunked")
         self.end_headers()
         if flat is not None and resp.status == 200:
-            self._relay_translated(resp, flat)
+            self._relay_translated(resp, flat, upstream_data)
             self.wfile.write(b"0\r\n\r\n")
             return
         while True:
@@ -312,7 +399,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
     def do_POST(self):
         body = self.rfile.read(int(self.headers.get("content-length") or 0))
         seat = seat_of(self.client_address[1])
-        to, flat = target(seat), None
+        to, flat, sent = target(seat), None, None
         if to and not self.headers.get("content-encoding"):
             try:
                 data = json.loads(body)
@@ -323,6 +410,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
                         data.pop(field, None)
                     if TRANSLATE and self.path.rstrip("/").endswith("/responses"):
                         flat = to_upstream(data)
+                        sent = data
                     body = json.dumps(data).encode()
                     if os.environ.get("MODEL_PROXY_DUMP"):
                         open(os.environ["MODEL_PROXY_DUMP"], "wb").write(body)
@@ -331,7 +419,7 @@ class Proxy(http.server.BaseHTTPRequestHandler):
         elif self.headers.get("content-encoding"):
             sys.stderr.write(f"{self.path} compressed body ({self.headers['content-encoding']}), passed through\n")
         try:
-            self._forward(body, flat)
+            self._forward(body, flat, sent)
         except (BrokenPipeError, ConnectionResetError):
             pass   # the client hung up after it had what it needed
 
