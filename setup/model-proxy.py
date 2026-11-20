@@ -398,12 +398,26 @@ class Proxy(http.server.BaseHTTPRequestHandler):
             headers["authorization"] = "Bearer " + KEY
         if body is not None:
             headers["content-length"] = str(len(body))
-        req = urllib.request.Request(UPSTREAM + self.path, data=body, headers=headers,
-                                     method=self.command)
-        try:
-            resp = urllib.request.urlopen(req, timeout=900)
-        except urllib.error.HTTPError as err:
-            resp = err
+        # A rate limit or a busy upstream is waited out here (Retry-After, else backoff, about
+        # three minutes in all), so a short limit never ends a seat's turn.
+        import time
+        waits = [5, 10, 20, 30, 45, 60]
+        while True:
+            req = urllib.request.Request(UPSTREAM + self.path, data=body, headers=headers,
+                                         method=self.command)
+            try:
+                resp = urllib.request.urlopen(req, timeout=900)
+            except urllib.error.HTTPError as err:
+                resp = err
+            if resp.status not in (429, 502, 503, 529) or not waits:
+                break
+            try:
+                pause = min(float(resp.headers.get("retry-after") or 0), 60) or waits[0]
+            except ValueError:
+                pause = waits[0]
+            waits.pop(0)
+            sys.stderr.write(f"upstream {resp.status}, retrying in {pause:.0f}s\n")
+            time.sleep(pause)
         self.send_response(resp.status)
         for k, v in resp.headers.items():
             if k.lower() not in ("transfer-encoding", "connection", "content-length"):
