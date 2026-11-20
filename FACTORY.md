@@ -27,6 +27,10 @@ moved to Meta's muse-spark-1.3, which serves the OpenAI Responses API. At 08:49Z
 moved to muse-wonder-1.0, which was about 3x faster in a probe. The Gatekeeper is the queue
 every review and check waits on, and the move also keeps test writer and reviewer on
 different models. The proxy finds the calling seat from the socket's owning process.
+Wonder did not hold up in the seat. On its second turn one response streamed for 18 minutes
+and ended with "Incomplete response, reason: max_output_tokens", which ended the turn, so at
+09:19Z the Gatekeeper went back to muse-spark-1.3 and was restarted to resume its pending
+handoff.
 On its first turn on Muse, the Gatekeeper merged an update, wrote "sending the consolidated
 report now", marked its 17 queued messages as needing no reply, and ended the turn without
 sending anything. From 08:55Z the proxy appends a short harness note,
