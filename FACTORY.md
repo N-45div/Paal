@@ -192,6 +192,18 @@ Analytics -> Usage & Cost), number of handoffs, rejections and what each changed
   finished; the Lead keeps an in-flight list and treats a seat that stopped without reporting
   as idle; the Gatekeeper keeps a review queue, skips commits already merged and gives every
   handoff a verdict. The review seat needs a model that holds long tasks.
+- **A weak fallback model is worse than no model (run 5, stage 1).** The review seats started
+  on Kimi-K3.1-Pro and GLM-5.3 and did good work: the first reject, ruling and fix took two
+  minutes. Forty minutes in, the provider's free credit ran out and every call failed. A
+  failed turn leaves its messages pending, so a restart on a working model resumes it. We
+  instead moved both seats to muse-spark-1.3 to keep going. The Gatekeeper on Spark stopped
+  mid-review again and again, merged one package after five hours, and settled the remaining
+  handoffs without verdicts, so at 01:15Z on Nov 21 no seat had anything left to answer. Its
+  last message, that a commit was already merged, went only to the builder, and the builder
+  did not tell the Lead. Fixes: when a provider fails mid-run, the seats wait for a working
+  model instead of falling back to a weak one; the Gatekeeper reports "already merged" to
+  `@lead` too; and a builder whose package is merged tells `@lead` its next step in the same
+  turn.
 - **A billing guard misread a Codex rate limit as a Claude usage limit** and moved the Claude
   seats from the subscription to the API key needlessly. `setup/billing-guard.sh` now matches
   only Claude Code's own limit messages.

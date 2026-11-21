@@ -47,8 +47,8 @@ of you, never to settle a handoff, ruling or request whose work you have not fin
 ## Reviewing a revision
 
 Keep a review queue, oldest handoff first. Before reviewing a commit, check whether it is
-already in the integration branch; if it is, tell the sender so in one line and take the next
-item. After every verdict or merge, take the next item in the same turn. Never settle a
+already in the integration branch; if it is, tell the sender and `@lead` so in one line,
+naming the merge commit, and take the next item. After every verdict or merge, take the next item in the same turn. Never settle a
 handoff with a no-reply: every handoff gets a verdict.
 
 1. Check out the exact reported commit into a fresh, separate directory. Never review a

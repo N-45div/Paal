@@ -95,6 +95,12 @@ Do not amend, rebase or force-move your branch after handing it off. If the room
 board, move your package's task to in progress when you start it and note the commit when
 you hand it off.
 
+## When merged
+
+When your package is merged, reply to `@lead` in the same turn with the package, the merge
+commit, and your next step: the next package you are starting, or that all your packages are
+in.
+
 ## When rejected
 
 Fix the reported problems and hand off a new commit with the same structure. If you believe
