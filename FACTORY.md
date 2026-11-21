@@ -15,17 +15,23 @@ different specification and it runs the same way.
 | Lead | Claude Code | claude-sonnet-5-5 (high) | Ledger, work packages, rulings, stage freeze, reports |
 | Builder A | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
 | Builder B | Claude Code | claude-haiku-5-5 (medium) | Implements assigned packages |
-| Prover | Codex | GLM-5.3 (Baseten) | Black-box acceptance tests derived from the specification |
-| Gatekeeper | Codex | Kimi-K3.1-Pro (Baseten) | Clean-room review, all check runs, merges, final checks |
+| Prover | Claude Code | claude-haiku-5-5 (medium) | Black-box acceptance tests derived from the specification |
+| Gatekeeper | Claude Code | claude-sonnet-5-5 (medium) | Clean-room review, all check runs, merges, final checks |
 
 Mandates: [`mandates/`](mandates/). Each one says how a seat works, never what it builds.
 
-The Codex seats reach their models through [`setup/model-proxy.py`](setup/model-proxy.py),
-which picks each seat's model and translates Codex's tool format for providers that serve
-only plain function tools. The models come from three labs (Anthropic, Moonshot AI and
-Zhipu AI), so test writer, reviewer and builders never share a model family. Before the judged run, each candidate review model
-was given a coding task and a review of a commit with a planted bug that the builder's own
-test missed. One candidate claimed a commit it had not made and was dropped.
+The submitted band runs every seat on one Claude subscription: Sonnet where judgement gates
+the work (the Lead and the Gatekeeper), Haiku where the work is well specified (builders and
+Prover). Earlier runs put the Prover and Gatekeeper on other model families through Codex and
+[`setup/model-proxy.py`](setup/model-proxy.py), which picks each seat's model and translates
+Codex's tool format. That kept test writer and reviewer independent of the builders, but
+every third-party provider failed mid-run (quota, credit, or a model that could not hold a
+long review), and each failure stopped the band. The independence now comes from the
+mandates instead: the Prover derives tests from the specification and never reads product
+code first, and the Gatekeeper reviews on a stronger model than the builders. Before run 5,
+each candidate review model was given a coding task and a review of a commit with a planted
+bug that the builder's own test missed. One candidate claimed a commit it had not made and
+was dropped.
 
 **Mid-run model changes (judged run).** The Codex seats ran stage 1 on gpt-6.1-terra. Stage 1
 alone used about 530M input tokens, so after the freeze both were moved to gpt-6-luna. At
@@ -121,7 +127,7 @@ dispatch -> @lead reads the stage spec, writes the ledger (every "must" = one id
 | Five seats, two builders | Parallel packages and clearly distributed work | More tokens; merge coordination |
 | Separate worktree and git identity per seat | Builders never trample each other's working tree; history shows who wrote what | One-time setup script |
 | Only the Gatekeeper merges and runs the harness | One gate, no parallel heavy checks overloading the machine | Gatekeeper can become a queue |
-| Prover on a different model family than the builders | Reduces shared blind spots between code and tests | A second provider account |
+| One Claude subscription for every seat | No third-party provider can stop the run mid-stage | Shared usage limits; the guard waits out a limit and restarts the seats |
 | Full specification pasted into each seat's first handoff | Seats see only messages that mention them; pointers lose context | Large first messages per stage |
 | Cumulative ledger copied forward | Later stages re-verify earlier requirements | Ledger grows each stage |
 | Shared memory (Cognee) for rulings and rejection lessons | Context survives compaction and stage boundaries | Optional dependency; seats continue without it |

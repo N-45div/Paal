@@ -19,11 +19,16 @@ case "$MODE" in
     LEAD_MODEL="${LEAD_MODEL:-claude-sonnet-5-5}";     LEAD_EFFORT="${LEAD_EFFORT:-high}"
     BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
     CODEX_MODEL="${CODEX_MODEL:-gpt-6.1-terra}";     CODEX_EFFORT="${CODEX_EFFORT:-medium}" ;;
+  claude)   # every seat on Claude Code, for a single Claude subscription
+    LEAD_MODEL="${LEAD_MODEL:-claude-sonnet-5-5}";     LEAD_EFFORT="${LEAD_EFFORT:-high}"
+    BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
+    PROVER_MODEL="${PROVER_MODEL:-claude-haiku-5-5}";   GATE_MODEL="${GATE_MODEL:-claude-sonnet-5-5}"
+    REVIEW_EFFORT="${REVIEW_EFFORT:-medium}" ;;
   rehearsal)
     LEAD_MODEL="${LEAD_MODEL:-claude-haiku-5-5}";    LEAD_EFFORT="${LEAD_EFFORT:-medium}"
     BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
     CODEX_MODEL="${CODEX_MODEL:-gpt-6-luna}";        CODEX_EFFORT="${CODEX_EFFORT:-low}" ;;
-  *) echo "usage: create-seats.sh rehearsal|judged" >&2; exit 2 ;;
+  *) echo "usage: create-seats.sh rehearsal|judged|claude" >&2; exit 2 ;;
 esac
 
 # Band Desktop 0.4.18 on Linux launches ~/.local/share/jam/daemon/jam as the Claude seats'
@@ -66,9 +71,14 @@ claude_seat "Builder A" builder-a "$BUILDER_MODEL" "$BUILDER_EFFORT" \
   "Implements assigned work packages in its own worktree and hands off exact commits. Never accepts its own work."
 claude_seat "Builder B" builder-b "$BUILDER_MODEL" "$BUILDER_EFFORT" \
   "Implements assigned work packages in its own worktree and hands off exact commits. Never accepts its own work."
-codex_seat  "Prover"     prover \
-  "Writes independent black-box acceptance tests from the specification and reports failing requirements. Never reads product code first."
-codex_seat  "Gatekeeper" gatekeeper \
-  "The only seat that accepts and merges work: rebuilds exact commits, runs every check, tests the tests. Never fixes code."
-
-echo "Models: lead=$LEAD_MODEL/$LEAD_EFFORT builders=$BUILDER_MODEL/$BUILDER_EFFORT codex=$CODEX_MODEL/$CODEX_EFFORT"
+PROVER_DESC="Writes independent black-box acceptance tests from the specification and reports failing requirements. Never reads product code first."
+GATE_DESC="The only seat that accepts and merges work: rebuilds exact commits, runs every check, tests the tests. Never fixes code."
+if [ "$MODE" = claude ]; then
+  claude_seat "Prover"     prover     "$PROVER_MODEL" "$REVIEW_EFFORT" "$PROVER_DESC"
+  claude_seat "Gatekeeper" gatekeeper "$GATE_MODEL"   "$REVIEW_EFFORT" "$GATE_DESC"
+  echo "Models: lead=$LEAD_MODEL/$LEAD_EFFORT builders=$BUILDER_MODEL/$BUILDER_EFFORT prover=$PROVER_MODEL gatekeeper=$GATE_MODEL/$REVIEW_EFFORT"
+else
+  codex_seat "Prover"     prover     "$PROVER_DESC"
+  codex_seat "Gatekeeper" gatekeeper "$GATE_DESC"
+  echo "Models: lead=$LEAD_MODEL/$LEAD_EFFORT builders=$BUILDER_MODEL/$BUILDER_EFFORT codex=$CODEX_MODEL/$CODEX_EFFORT"
+fi

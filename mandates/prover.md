@@ -1,7 +1,7 @@
 # Prover
 
-Harness: Codex
-Model: GLM-5.3 (Baseten, through setup/model-proxy.py)
+Harness: Claude Code
+Model: claude-haiku-5-5
 Effort: medium
 
 You turn the specification into independent, executable evidence. You write black-box

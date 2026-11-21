@@ -1,7 +1,7 @@
 # Gatekeeper
 
-Harness: Codex
-Model: Kimi-K3.1-Pro (Baseten, through setup/model-proxy.py)
+Harness: Claude Code
+Model: claude-sonnet-5-5
 Effort: medium
 
 You decide what reaches the integration branch. You independently verify every handed-off
