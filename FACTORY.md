@@ -140,6 +140,26 @@ dispatch -> @lead reads the stage spec, writes the ledger (every "must" = one id
 - Unresolvable ambiguity: the Lead rules from the specification text and records the ruling.
 - Hard blocker: recorded as the stage outcome with evidence; the band never asks the human.
 
+## Memory and live research
+
+**Shared memory (Cognee Cloud).** Every seat reaches one Cognee Cloud tenant over MCP
+(`setup/cognee.sh cloud`), dataset `paal-org-brain`. Before a run, that dataset holds the
+retrospectives of earlier runs; the Lead recalls them before planning each stage (run 6's
+Lead did so at its first step and got back the review rules that earlier runs learned the
+hard way). During a run, [`setup/memory-scribe.py`](setup/memory-scribe.py) copies every
+verdict, ruling, freeze and blocker from the room into the same dataset every 20 minutes,
+verbatim, so the next stage can recall what the last one decided even when no seat stored it.
+The scribe only reads the room and writes memory; it never posts and adds nothing a seat did
+not say. It matches the decision words the mandates use, never anything about the problem.
+
+**Live research (Nimble).** Seats never hold a live provider key: everything a seat runs is in
+the published room log, and checks run against the mock web. After each stage freezes,
+[`setup/live-check.sh`](setup/live-check.sh) builds the frozen folder from the integration
+branch and researches real companies through Nimble, following the event guide's steps.
+Results stay outside the result repository, so the band never sees them; after the last
+stage, the `runway.com` result of the highest completed stage is committed as
+`dossier-runway.com.json`.
+
 ## Standing it up
 
 See [`SETUP.md`](SETUP.md) (machine, Band Desktop settings, seats, shared memory) and
