@@ -168,8 +168,37 @@ See [`SETUP.md`](SETUP.md) (machine, Band Desktop settings, seats, shared memory
 
 ## Measured cost and time
 
-TBD per stage: wall-clock from dispatch to freeze, model spend per seat (Band Desktop
-Analytics -> Usage & Cost), number of handoffs, rejections and what each changed.
+Judged run 6, 2026-11-21, one dispatch at 05:07:23 UTC, all five seats on one Claude Pro
+subscription. Times come from the room's timestamps; the verdict counts are room messages
+that carry the Gatekeeper's word, so a message that rules on two handoffs counts once.
+
+| Stage | Frozen (UTC) | Wall clock | Paused on the Pro limit | Working time | Messages carrying ACCEPT / REJECT |
+|---|---|---|---|---|---|
+| 1 | 05:44 | 0 h 37 m | none | 0 h 37 m | 9 / 5 |
+| 2 | 07:33 | 1 h 49 m | 06:00 to 06:18 | 1 h 31 m | 21 / 1 |
+| 3 | 12:43 | 5 h 10 m | 07:46 to 11:18 | 1 h 38 m | 10 / 3 |
+| 4 | 17:30 | 4 h 47 m | 12:55 to 16:23 | 1 h 19 m | 5 / 3 |
+| Total | | 12 h 23 m | 7 h 18 m | 5 h 05 m | 45 / 12 |
+
+- **Result.** The event's harness in isolated mode passes stages 1, 2, 3 and 4 on the frozen
+  revision. At the last freeze the band's own checks stood at 271 acceptance tests passed,
+  0 failed; 519 unit and service tests; 2 UI tests; and 18 of 18 restart scenarios. The
+  Gatekeeper planted three defects in stage 4, and the tests caught all three.
+- **Where the time went.** More than half the wall clock was waiting for the Pro 5-hour
+  window to reset; `billing-guard.sh` slept through each limit and restarted every seat,
+  which resumed its pending work with nothing lost. A larger subscription would cut the
+  pauses without changing anything else.
+- **Model spend.** Flat: the Pro subscription, no per-token billing. The room log holds 9,589
+  messages, including 3,297 tool calls, 391 text messages and 13 error messages (all of them
+  Pro-limit notices).
+- **What rejections changed.** In stage 4 two handoffs were rejected, both for traceability:
+  they cited ledger rows that no test named. The builders added the missing tests, and the
+  work was accepted on resubmission. In the same stage, a budget test failed only when it ran
+  after the Prover's new restart module. The Lead ruled it a test defect, and the Prover fixed
+  the module's teardown.
+- **Live research.** The Nimble checks after each freeze are kept in `band-work/live/`
+  outside the repository, along with each service log; see `dossier-runway.com.json` in the
+  result repository for the final one.
 
 ## What we tried that failed
 
