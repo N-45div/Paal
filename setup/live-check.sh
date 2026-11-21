@@ -12,7 +12,8 @@ set -euo pipefail
 REPO="${1:?result repo}"; STAGE="${2:?stage folder, e.g. stage-1}"; shift 2
 DOMAINS=("${@:-runway.com}")
 OUT="${LIVE_OUT:-$HOME/buildathon/band-work/live}"; PORT="${LIVE_PORT:-18900}"
-STAMP=$(date -u +%Y%m%dT%H%M%SZ); WORK=$(mktemp -d); NAME="live-$STAGE-$STAMP"
+STAMP=$(date -u +%Y%m%dT%H%M%SZ); WORK=$(mktemp -d)
+NAME=$(echo "live-$STAGE-$STAMP" | tr '[:upper:]' '[:lower:]')   # image names must be lowercase
 mkdir -p "$OUT"
 [ -f "$HOME/.nimble.env" ] || { echo "missing ~/.nimble.env" >&2; exit 1; }
 set -a; . "$HOME/.nimble.env"; set +a
