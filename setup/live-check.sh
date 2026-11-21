@@ -18,7 +18,9 @@ mkdir -p "$OUT"
 [ -f "$HOME/.nimble.env" ] || { echo "missing ~/.nimble.env" >&2; exit 1; }
 set -a; . "$HOME/.nimble.env"; set +a
 git -C "$REPO" archive main "$STAGE" | tar -x -C "$WORK"
-cleanup() { docker rm -f "$NAME" >/dev/null 2>&1 || true; rm -rf "$WORK"; }
+cleanup() {   # keep the service log: it shows whether a field was not found or the build gave up waiting
+  docker logs "$NAME" > "$OUT/$STAGE-$STAMP.service.log" 2>&1 || true
+  docker rm -f "$NAME" >/dev/null 2>&1 || true; rm -rf "$WORK"; }
 trap cleanup EXIT
 
 exec 9>/tmp/factory-heavy.lock; flock 9
