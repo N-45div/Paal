@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Create the five factory seats as Band-owned headless runtimes (Band Desktop must be running).
+# Create the factory seats (five, plus the Scout in `claude` mode) as Band-owned headless runtimes (Band Desktop must be running).
 #
 #   bash create-seats.sh rehearsal          # cheap models, for practice runs
 #   bash create-seats.sh judged             # the models the submitted run uses
@@ -23,7 +23,8 @@ case "$MODE" in
     LEAD_MODEL="${LEAD_MODEL:-claude-sonnet-5-5}";     LEAD_EFFORT="${LEAD_EFFORT:-high}"
     BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
     PROVER_MODEL="${PROVER_MODEL:-claude-haiku-5-5}";   GATE_MODEL="${GATE_MODEL:-claude-sonnet-5-5}"
-    REVIEW_EFFORT="${REVIEW_EFFORT:-medium}" ;;
+    REVIEW_EFFORT="${REVIEW_EFFORT:-medium}"
+    SCOUT_MODEL="${SCOUT_MODEL:-claude-haiku-5-5}";     SCOUT_EFFORT="${SCOUT_EFFORT:-medium}" ;;
   rehearsal)
     LEAD_MODEL="${LEAD_MODEL:-claude-haiku-5-5}";    LEAD_EFFORT="${LEAD_EFFORT:-medium}"
     BUILDER_MODEL="${BUILDER_MODEL:-claude-haiku-5-5}"; BUILDER_EFFORT="${BUILDER_EFFORT:-medium}"
@@ -76,7 +77,10 @@ GATE_DESC="The only seat that accepts and merges work: rebuilds exact commits, r
 if [ "$MODE" = claude ]; then
   claude_seat "Prover"     prover     "$PROVER_MODEL" "$REVIEW_EFFORT" "$PROVER_DESC"
   claude_seat "Gatekeeper" gatekeeper "$GATE_MODEL"   "$REVIEW_EFFORT" "$GATE_DESC"
-  echo "Models: lead=$LEAD_MODEL/$LEAD_EFFORT builders=$BUILDER_MODEL/$BUILDER_EFFORT prover=$PROVER_MODEL gatekeeper=$GATE_MODEL/$REVIEW_EFFORT"
+  if [ -z "${NO_SCOUT:-}" ]; then   # the live-web seat; needs the web tools (setup/web-layer.sh)
+    claude_seat "Scout" scout "$SCOUT_MODEL" "$SCOUT_EFFORT"       "Researches external dependencies and the live world with the web tools, answers other seats' factual questions with sources, and probes the band's work on real inputs. Never writes code."
+  fi
+  echo "Models: lead=$LEAD_MODEL/$LEAD_EFFORT builders=$BUILDER_MODEL/$BUILDER_EFFORT prover=$PROVER_MODEL gatekeeper=$GATE_MODEL/$REVIEW_EFFORT scout=${SCOUT_MODEL:-none}"
 else
   codex_seat "Prover"     prover     "$PROVER_DESC"
   codex_seat "Gatekeeper" gatekeeper "$GATE_DESC"
